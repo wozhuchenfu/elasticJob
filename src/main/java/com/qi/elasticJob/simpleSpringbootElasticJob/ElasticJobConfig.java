@@ -51,10 +51,11 @@ public class ElasticJobConfig {
 	private LiteJobConfiguration getLiteJobConfiguration(final Class<? extends SimpleJob> jobClass,
 														 final String cron,
 														 final int shardingTotalCount,
-														 final String shardingItemParameters) {
+														 final String shardingItemParameters,
+														 final String jobParameter) {
 		return LiteJobConfiguration.newBuilder(new SimpleJobConfiguration(
-				JobCoreConfiguration.newBuilder(jobClass.getName(), cron, shardingTotalCount)
-						.shardingItemParameters(shardingItemParameters).build()
+				//作业名字jobClass.getName()
+				JobCoreConfiguration.newBuilder(jobClass.getName(), cron, shardingTotalCount).shardingItemParameters(shardingItemParameters).jobParameter(jobParameter).build()
 				, jobClass.getCanonicalName())
 		).overwrite(true).build();
 	}
@@ -71,10 +72,11 @@ public class ElasticJobConfig {
 	public JobScheduler simpleJobScheduler(final SimpleJobDemo simpleJob,
 										   @Value("${simpleJob.cron}") final String cron,
 										   @Value("${simpleJob.shardingTotalCount}") final int shardingTotalCount,
-										   @Value("${simpleJob.shardingItemParameters}") final String shardingItemParameters) {
+										   @Value("${simpleJob.shardingItemParameters}") final String shardingItemParameters,
+										   @Value("${simpleJob.parameter}") String jobParameter) {
 		MyElasticJobListener elasticJobListener = new MyElasticJobListener();
 		return new SpringJobScheduler(simpleJob, regCenter,
-				getLiteJobConfiguration(simpleJob.getClass(), cron, shardingTotalCount, shardingItemParameters),
+				getLiteJobConfiguration(simpleJob.getClass(), cron, shardingTotalCount, shardingItemParameters,jobParameter),
 				elasticJobListener);
 	}
 }
