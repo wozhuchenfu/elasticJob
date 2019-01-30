@@ -116,13 +116,13 @@ public class ElasticJobConfig {
 			String entryKey = entry.getKey();
 			System.out.println("======entryKey======"+entryKey);
 			SimpleJob value = entry.getValue();
-			/*new SpringJobScheduler(simpleJob, regCenter,
+			new SpringJobScheduler(value, regCenter,
 					getLiteJobConfiguration(value.getClass(), cron, shardingTotalCount, shardingItemParameters,jobParameter),
-					elasticJobListener).init();*/
+					elasticJobListener).init();
 		}
-		new SpringJobScheduler(simpleJob, regCenter,
+		/*new SpringJobScheduler(simpleJob, regCenter,
 				getLiteJobConfiguration(simpleJob.getClass(), cron, shardingTotalCount, shardingItemParameters,jobParameter),
-				elasticJobListener).init();
+				elasticJobListener).init();*/
 	}
 
 }
