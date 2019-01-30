@@ -12,8 +12,16 @@ import com.dangdang.ddframe.job.reg.zookeeper.ZookeeperRegistryCenter;
 import com.qi.elasticJob.javaDemo.SimpleJobDemo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+
+import javax.annotation.PostConstruct;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 配置JobConfiuration，配置job随容器一起启动
@@ -58,6 +66,9 @@ public class ElasticJobConfig {
 				JobCoreConfiguration.newBuilder(jobClass.getName(), cron, shardingTotalCount).shardingItemParameters(shardingItemParameters).jobParameter(jobParameter).build()
 				, jobClass.getCanonicalName())
 		).overwrite(true).build();
+        /**
+         * overwrite概念，可通过JobConfiguration或Spring命名空间配置。overwrite=true即允许客户端配置覆盖注册中心，反之则不允许。如果注册中心无相关作业的配置，则无论overwrite是否配置，客户端配置都将写入注册中心。
+         */
 	}
 
 	/**
@@ -68,7 +79,7 @@ public class ElasticJobConfig {
 	 * @param shardingItemParameters
 	 * @return
 	 */
-	@Bean(initMethod = "init")
+	/*@Bean(initMethod = "init")
 	public JobScheduler simpleJobScheduler(final SimpleJobDemo simpleJob,
 										   @Value("${simpleJob.cron}") final String cron,
 										   @Value("${simpleJob.shardingTotalCount}") final int shardingTotalCount,
@@ -78,5 +89,40 @@ public class ElasticJobConfig {
 		return new SpringJobScheduler(simpleJob, regCenter,
 				getLiteJobConfiguration(simpleJob.getClass(), cron, shardingTotalCount, shardingItemParameters,jobParameter),
 				elasticJobListener);
+	}*/
+
+	@Autowired
+	private SimpleJobDemo simpleJob;
+	@Value("${simpleJob.cron}")
+	private String cron;
+	@Value("${simpleJob.shardingTotalCount}")
+	private int shardingTotalCount;
+	@Value("${simpleJob.shardingItemParameters}")
+	private String shardingItemParameters;
+	@Value("${simpleJob.parameter}")
+	String jobParameter;
+	@Autowired
+	ApplicationContext applicationContext;
+	@PostConstruct
+	public void simpleJobScheduler2(){
+		MyElasticJobListener elasticJobListener = new MyElasticJobListener();
+//		ApplicationContext applicationContext = new AnnotationConfigWebApplicationContext();
+//		((AnnotationConfigWebApplicationContext) applicationContext).refresh();
+		Map<String,SimpleJob> simpleJobMap = applicationContext.getBeansOfType(SimpleJob.class);
+		Set<Map.Entry<String,SimpleJob>> set = simpleJobMap.entrySet();
+		Iterator<Map.Entry<String, SimpleJob>> iterator = set.iterator();
+		while (iterator.hasNext()){
+			Map.Entry<String, SimpleJob> entry = iterator.next();
+			String entryKey = entry.getKey();
+			System.out.println("======entryKey======"+entryKey);
+			SimpleJob value = entry.getValue();
+			/*new SpringJobScheduler(simpleJob, regCenter,
+					getLiteJobConfiguration(value.getClass(), cron, shardingTotalCount, shardingItemParameters,jobParameter),
+					elasticJobListener).init();*/
+		}
+		new SpringJobScheduler(simpleJob, regCenter,
+				getLiteJobConfiguration(simpleJob.getClass(), cron, shardingTotalCount, shardingItemParameters,jobParameter),
+				elasticJobListener).init();
 	}
+
 }
