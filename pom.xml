@@ -80,12 +80,72 @@
             </dependency>-->
         </dependencies>
 
+    <profiles>
+        <profile>
+            <!-- 本地开发环境 -->
+            <id>dev</id>
+            <properties>
+                <profiles.env>dev</profiles.env>
+                <activeByDefault>true</activeByDefault>
+            </properties>
+        </profile>
+        <profile>
+            <!-- 测试环境 -->
+            <id>test</id>
+            <properties>
+                <profiles.env>test</profiles.env>
+            </properties>
+        </profile>
+        <profile>
+            <!-- 预发布环境 -->
+            <id>stage</id>
+            <properties>
+                <profiles.env>stage</profiles.env>
+            </properties>
+        </profile>
+        <profile>
+            <!-- 生产环境 -->
+            <id>prod</id>
+            <properties>
+                <profiles.env>prod</profiles.env>
+            </properties>
+        </profile>
+    </profiles>
+
     <build>
+        <finalName>elastic-job-example</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.xyy.ms.jobschedule.Start</mainClass>
+                    <fork>true</fork>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- 资源根目录排除各环境的配置，使用单独的资源目录来指定 -->
+                <excludes>
+                    <exclude>config-dev/*</exclude>
+                    <exclude>config-test/*</exclude>
+                    <exclude>config-stage/*</exclude>
+                    <exclude>config-prod/*</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <!-- 根据参数指定资源目录 -->
+                <directory>src/main/resources/config-${profiles.env}</directory>
+            </resource>
+        </resources>
     </build>
 </project>
